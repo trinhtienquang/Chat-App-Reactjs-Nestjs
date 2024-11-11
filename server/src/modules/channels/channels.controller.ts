@@ -32,7 +32,7 @@ export class ChannelsController {
   async updateChannel(@Param('id') id: string, @Body() updateChannelDto:ChannelDto) {
     const result = await this.channelsService.updateChannel(id, updateChannelDto);
     return {
-      message: 'Cập nhật người dùng thành công!',
+      message: 'Cập nhật channel thành công!',
       statusCode: HttpStatus.OK,
       result
     };

@@ -1,4 +1,4 @@
-import { BadRequestException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, HttpStatus, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { ChannelDto } from './dto/channel.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Channel, ChannelDocument } from './channel.schema';
@@ -45,40 +45,41 @@ export class ChannelsService {
 
   async getChannel(id: string){
     try {
+      // Kiểm tra xem ID có hợp lệ hay không
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        throw new BadRequestException('ID không hợp lệ');
+      }
+
       const channel = await this.channelModel.findById(id).exec();
 
       if (!channel) {
-        return {
-          statusCode: HttpStatus.NOT_FOUND,
-          message: 'Channel not found'
-        };
+        throw new NotFoundException('Không tìm thấy channel');
       }
 
-      const participants = [];
-    
-    // Lặp qua từng participant ID và lấy thông tin user
-    for (const participantId of channel.participants) {
-      const user = await this.userService.findById(participantId.toString());
-      if (user) {
-        participants.push(user);
-      }
-    }
+      // Lấy thông tin chi tiết của participants
+      const participantDetails = await Promise.all(
+        channel.participants.map(async (participantId) => {
+          const user = await this.userService.findById(participantId.toString());
+          return user;
+        })
+      );
 
-    // Tạo bản sao của channel để không ảnh hưởng dữ liệu gốc
-    const channelData = channel.toObject();
+      // Lấy thông tin chi tiết của admins nếu có
+      const adminDetails = channel.admins ? await Promise.all(
+        channel.admins.map(async (adminId) => {
+          const user = await this.userService.findById(adminId.toString());
+          return user;
+        })
+      ) : [];
+
+      const channelData = channel.toObject();
     // Cập nhật mảng participants với thông tin đầy đủ của users
-    channelData.participants = participants;
+    
 
-      return {
-        statusCode: HttpStatus.OK,
-        channelData
-      } ;
+      return {...channelData, participantDetails, adminDetails}
 
     } catch (error) {
-      return {
-        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: 'Error retrieving channel'
-      };
+      return error.response
     }
   }
   
@@ -87,9 +88,9 @@ export class ChannelsService {
     return `This action returns all channels`;
   }
 
-  async updateChannel(id: string, updateChannelDto:ChannelDto) {
+  async updateChannel(id: string, update:any) {
     try {
-      const updatedChannel = await this.channelModel.findByIdAndUpdate(id, updateChannelDto, { new: true }).exec();
+      const updatedChannel = await this.channelModel.findByIdAndUpdate(id, update, { new: true }).exec();
   
       if (!updatedChannel) {
         throw new NotFoundException(`Không tìm thấy channel với id: ${id}`);

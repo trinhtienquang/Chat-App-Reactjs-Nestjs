@@ -1,34 +1,43 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body,Param, Delete, UseGuards, Put } from '@nestjs/common';
 import { MessagesService } from './messages.service';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { UpdateMessageDto } from './dto/update-message.dto';
+import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
 
 @Controller('messages')
 export class MessagesController {
   constructor(private readonly messagesService: MessagesService) {}
 
-  @Post()
-  create(@Body() createMessageDto: CreateMessageDto) {
-    return this.messagesService.create(createMessageDto);
-  }
-
-  @Get()
-  findAll() {
-    return this.messagesService.findAll();
-  }
-
+  @UseGuards(JwtAuthGuard)
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.messagesService.findOne(+id);
+  async getMessage(@Param('id') id: string) {
+    const message = await this.messagesService.getMessage(id);
+    return message;
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateMessageDto: UpdateMessageDto) {
-    return this.messagesService.update(+id, updateMessageDto);
+  @Get('channel/:id')
+  async getMessagesByChannel(@Param('id') id: string) {
+    const message = await this.messagesService.getMessagesByChannel(id);
+    return message;
   }
 
+  @Post('')
+  async createMessage(@Body() body) {
+    const result = await this.messagesService.addMessage(body);
+    return result;
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Put(':id')
+  async updateMessage(@Param('id') id: string, @Body() body) {
+    const result = await this.messagesService.updateMessage(id, body);
+    return result;
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.messagesService.remove(+id);
+  async deleteMessage(@Param('id') id: string) {
+    const result = await this.messagesService.deleteMessage(id);
+    return result;
   }
 }

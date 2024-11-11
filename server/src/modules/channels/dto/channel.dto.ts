@@ -2,6 +2,7 @@ import { IsArray, IsString, IsOptional } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class ChannelDto {
+  @IsOptional()
   @IsArray()
   @IsString({ each: true })
   @Type(() => String)  // Chuyển đổi mỗi phần tử trong mảng thành string
