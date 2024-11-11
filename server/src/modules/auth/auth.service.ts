@@ -14,7 +14,8 @@ export class AuthService {
     async validateUser(email: string, pass: string): Promise<any> {
         const user = await this.userService.findByEmail(email);
         // Kiểm tra nếu user không tồn tại hoặc mật khẩu không đúng
-        if (!user || !(await bcrypt.compare(pass, user.password))) {
+        const hashedPassword = user.password
+        if (!user || !(await bcrypt.compare(pass, hashedPassword))) {
             return null
         }
         return user;

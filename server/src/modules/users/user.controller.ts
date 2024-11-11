@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Param, Body, Delete, Patch, HttpStatus, UseGuards, Query, Search } from '@nestjs/common';
+import { Controller, Post, Get, Param, Body, Delete, HttpStatus, UseGuards, Query, Search, Put } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './user.schema';
@@ -11,30 +11,32 @@ export class UserController {
 
   @UseGuards(JwtAuthGuard)
   @Post()
-  create(@Body() createUserDto: CreateUserDto): Promise<User> {
+  create(@Body() createUserDto: CreateUserDto) {
+    console.log(createUserDto)
     return this.userService.createUser(createUserDto);
   }
 
   @UseGuards(JwtAuthGuard)
   @Get(':id')
-  findUserById(@Param('id') id: string): Promise<User> {
+  findUserById(@Param('id') id: string) {
     return this.userService.findById(id);
   }
 
   @UseGuards(JwtAuthGuard)
   @Get('')
-  findUserByName(@Query('search') name: string):Promise<User[]> {
+  findUserByName(@Query('search') name: string) {
     return this.userService.findByUsername(name);
   }
 
   @UseGuards(JwtAuthGuard)
-  @Patch(':id')
-  async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto): Promise<{ message: string; statusCode: number }> {
-    await this.userService.updateUser(id, updateUserDto);
+  @Put(':id')
+  async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto){
+    const result = await this.userService.updateUser(id, updateUserDto);
     
     return {
       message: 'Cập nhật người dùng thành công!',
       statusCode: HttpStatus.OK,
+      result
     };
   }
 

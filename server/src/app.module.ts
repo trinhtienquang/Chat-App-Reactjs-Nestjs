@@ -5,8 +5,8 @@ import { MongooseModule } from '@nestjs/mongoose';
 import databaseConfig from './config/mongodb.config';
 import { UserModule } from './modules/users/user.module';
 import { AuthModule } from './modules/auth/auth.module';
-import { MessageModule } from './modules/message/message.module';
-import { ChannelModule } from './modules/channel/channel.module';
+import { ChannelsModule } from './modules/channels/channels.module';
+import { MessagesModule } from './modules/messages/messages.module';
 
 @Module({
   imports: [
@@ -23,8 +23,8 @@ import { ChannelModule } from './modules/channel/channel.module';
     }),
     UserModule,
     AuthModule,
-    MessageModule,
-    ChannelModule,
+    ChannelsModule,
+    MessagesModule
   ],
   providers: [ ChatGateway],
 })

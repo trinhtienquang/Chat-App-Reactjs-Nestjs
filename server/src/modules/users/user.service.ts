@@ -26,7 +26,7 @@ export class UserService {
 
   // Phương thức tìm kiếm user bằng email
   async findByEmail(email: string): Promise<User | null> {
-    return this.userModel.findOne({ email }).select('-password').lean();
+    return this.userModel.findOne({ email }).lean();
   }
 
   async findByUsername(username: string): Promise<User[]> {
@@ -37,7 +37,7 @@ export class UserService {
   async updateUser(id: string, updateUserDto: UpdateUserDto): Promise<User | null> 
   {
     try {
-      const updatedUser = await this.userModel.findByIdAndUpdate(id, updateUserDto, { new: true }).exec();
+      const updatedUser = await this.userModel.findByIdAndUpdate(id, updateUserDto, { new: true }).select('-password').exec();
   
       if (!updatedUser) {
         throw new NotFoundException(`Không tìm thấy người dùng với id: ${id}`);
